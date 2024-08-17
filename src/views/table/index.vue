@@ -1,13 +1,10 @@
 <template>
   <div class="app-container">
-    <el-table
-      v-loading="listLoading"
-      :data="list"
-      element-loading-text="Loading"
-      border
-      fit
-      highlight-current-row
-    >
+
+    <!-- Search Bar -->
+    <el-input v-model="searchQuery" placeholder="Search by title or author" class="mb-4" clearable />
+
+    <el-table v-loading="listLoading" :data="filteredList" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column align="center" label="ID" width="95">
         <template slot-scope="scope">
           {{ scope.$index }}
@@ -60,8 +57,13 @@ export default {
   data() {
     return {
       list: null,
-      listLoading: true
+      listLoading: true,
+      searchQuery: '' ,
+      filteredList: []
     }
+  },
+  watch: {
+    searchQuery: 'filterData' // 监听 searchQuery 的变化
   },
   created() {
     this.fetchData()
@@ -71,9 +73,23 @@ export default {
       this.listLoading = true
       getList().then(response => {
         this.list = response.data.items
+        this.filterData() // 初次获取数据后，调用 filterData 初始化 filteredList
         this.listLoading = false
       })
+    },
+    filterData() {
+      this.filteredList = this.list.filter(item => 
+        item.title.toLowerCase().includes(this.searchQuery.toLowerCase())||
+        item.author.toLowerCase().includes(this.searchQuery.toLowerCase())
+      )
     }
   }
 }
 </script>
+<style scoped>
+.app-container .mb-4 {
+  margin-bottom: 16px;
+  width: 600px; /* 设置搜索栏的宽度，可以根据需求调整 */
+  max-width: 100%; /* 确保搜索栏在小屏幕上不会超出容器宽度 */
+}
+</style>
