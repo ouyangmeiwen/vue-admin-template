@@ -24,6 +24,8 @@ import '@/permission' // permission control
  * please remove it before going online ! ! !
  */
 if (process.env.NODE_ENV === 'production') {
+  console.log('mockXHR function is called');
+  console.log('VUE_APP_MOCK inside mockXHR:', process.env.VUE_APP_MOCK);
   const { mockXHR } = require('../mock')
   mockXHR()
 }

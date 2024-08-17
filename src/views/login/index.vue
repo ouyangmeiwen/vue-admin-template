@@ -3,9 +3,23 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">图书云平台</h3>
       </div>
 
+      <el-form-item prop="tenantname">
+        <span class="svg-container">
+          <svg-icon icon-class="user" />
+        </span>
+        <el-input
+          ref="tenantname"
+          v-model="loginForm.tenantname"
+          placeholder="TenantName"
+          name="tenantname"
+          type="text"
+          tabindex="1"
+          auto-complete="on"
+        />
+      </el-form-item>
       <el-form-item prop="username">
         <span class="svg-container">
           <svg-icon icon-class="user" />
@@ -41,11 +55,13 @@
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
+        <span >tenantname: invengotest,超级机构则不填写第一行</span>
+        <br/>
+        <span> username: admin</span>
+        <span> password: 123456</span>
       </div>
 
     </el-form>
@@ -53,11 +69,18 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
+import { validUsername, validTenantName } from '@/utils/validate'
 
 export default {
   name: 'Login',
   data() {
+    const validateTenant = (rule, value, callback) => {
+      if (!validTenantName(value)) {
+        callback(new Error('Please enter the correct tenant name'))
+      } else {
+        callback()
+      }
+    }
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
         callback(new Error('Please enter the correct user name'))
@@ -75,11 +98,13 @@ export default {
     return {
       loginForm: {
         username: 'admin',
-        password: '111111'
+        password: '111111',
+        tenantname: 'inventotest'
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        tenantname: [{ required: true, trigger: 'blur', validator: validateTenant }]
       },
       loading: false,
       passwordType: 'password',

@@ -58,12 +58,12 @@ export default {
     return {
       list: null,
       listLoading: true,
-      searchQuery: '' ,
+      searchQuery: '',
       filteredList: []
     }
   },
   watch: {
-    searchQuery: 'filterData' // 监听 searchQuery 的变化
+    searchQuery: 'filterData'
   },
   created() {
     this.fetchData()
@@ -78,8 +78,8 @@ export default {
       })
     },
     filterData() {
-      this.filteredList = this.list.filter(item => 
-        item.title.toLowerCase().includes(this.searchQuery.toLowerCase())||
+      this.filteredList = this.list.filter(item =>
+        item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         item.author.toLowerCase().includes(this.searchQuery.toLowerCase())
       )
     }
