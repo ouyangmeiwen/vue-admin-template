@@ -2,3 +2,6 @@
 npm run dev
 npm run build:prod
 npm run build:stage
+
+
+vue.config.js 配置是否屏蔽mock
