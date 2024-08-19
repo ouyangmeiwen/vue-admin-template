@@ -58,7 +58,7 @@
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <div class="tips">
-        <span >tenantname: invengotest,超级机构则不填写第一行</span>
+        <span >tenantname: 9996,超级机构则不填写第一行</span>
         <br/>
         <span> username: admin</span>
         <span> password: 123456</span>
@@ -98,8 +98,8 @@ export default {
     return {
       loginForm: {
         username: 'admin',
-        password: '111111',
-        tenantname: 'inventotest'
+        password: '123456',
+        tenantname: '8868'
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
