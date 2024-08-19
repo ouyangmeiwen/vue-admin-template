@@ -4,8 +4,6 @@ import store from '@/store'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 
 
-
-
 const isMockEnabled = process.env.VUE_APP_MOCK === 'true'
 
 export async function login(data) {
@@ -17,6 +15,10 @@ export async function login(data) {
     })
   } else {
     try {
+
+      //api/services/app/Account/IsTenantIdAvailable  先通过这个接口检测租户是否可用
+
+
       const response = await axios.post(process.env.VUE_APP_BASE_API + '/api/TokenAuth/Authenticate',
         {
           userNameOrEmailAddress: data.username,

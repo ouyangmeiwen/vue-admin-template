@@ -4,6 +4,7 @@ import store from '@/store'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 
 const isMockEnabled = process.env.VUE_APP_MOCK === 'true'
+
 export async function getList(params) {
   if (isMockEnabled) {
     return request({
@@ -77,8 +78,8 @@ export async function getALL(params) {
       var response = await axios.get(process.env.VUE_APP_BASE_API + '/api/services/app/ItemEntities/GetAll',
         {
           params: {
-            SkipCount:0,
-            MaxResultCount:100
+            SkipCount:params.Skip,
+            MaxResultCount:params.MaxResult
           },
           headers: {
             'Content-Type': 'application/json',
