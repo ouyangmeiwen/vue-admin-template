@@ -17,7 +17,6 @@ export async function login(data) {
     })
   } else {
     try {
-      // 发送 POST 请求
       const response = await axios.post(process.env.VUE_APP_BASE_API + '/api/TokenAuth/Authenticate',
         {
           userNameOrEmailAddress: data.username,
@@ -31,17 +30,15 @@ export async function login(data) {
           timeout: 10000
         }
       );
-      // 打印响应数据
       setToken(response.data.result.accessToken)
-      // 返回结果
       return {
         code: 20000,
-        data: response.data.result.accessToken
+        data: {
+          token: response.data.result.accessToken
+        }
       };
     } catch (error) {
-      // 处理请求错误
       console.error('POST request error:', error);
-      // 可以选择抛出错误或返回一个错误对象
       return {
         code: error.response ? error.response.status : 500,
         message: error.message
@@ -58,21 +55,41 @@ export async function getInfo(token) {
       params: { token }
     })
   } else {
-    console.log('getInfo:'+token)
-    return {
-      code: 20000,
-      data: {
-        roles: ['admin'],
-        introduction: 'I am a super administrator',
-        avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
-        name: 'Super Admin',
-        tenant: 'invengotest'
+    console.log('getInfo:' + token)
+    try {
+      const response = await axios.get(process.env.VUE_APP_BASE_API + '/api/services/app/Session/GetCurrentLoginInformations',
+        {
+          params: {
+
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          timeout: 10000
+        }
+      );
+      return {
+        code: 20000,
+        data: {
+          roles: ['admin'],
+          introduction: 'I am a super administrator',
+          avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
+          name: response.data.result.user.surname,
+          tenant: response.data.result.tenant.name
+        }
       }
+    } catch (error) {
+      console.error('POST request error:', error);
+      return {
+        code: error.response ? error.response.status : 500,
+        message: error.message
+      };
     }
   }
 }
 
-export async function logout() {
+export async function logout(token) {
   if (isMockEnabled) {
     return request({
       url: '/vue-admin-template/user/logout',
@@ -80,36 +97,26 @@ export async function logout() {
     })
   } else {
     try {
-      // 获取 token
-      const token = getToken();
-      console.log('Token to be sent:', token);
-      // 发送 POST 请求
       const response = await axios.get(process.env.VUE_APP_BASE_API + '/api/TokenAuth/LogOut',
         {
           params: {
-            //userNameOrEmailAddress: data.username,
-            //password: data.password
           },
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // 如果你的 API 使用 Bearer token 认证
+            'Authorization': `Bearer ${token}` 
           },
           timeout: 10000
         }
       );
-      // 打印响应数据
       store.dispatch('user/resetToken').then(() => {
         location.reload()
       })
-      // 返回结果
       return {
         code: 20000,
         data: 'success'
       }
     } catch (error) {
-      // 处理请求错误
       console.error('get request error:', error);
-      // 可以选择抛出错误或返回一个错误对象
       return {
         code: error.response ? error.response.status : 500,
         message: error.message

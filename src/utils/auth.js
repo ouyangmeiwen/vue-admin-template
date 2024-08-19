@@ -8,7 +8,6 @@ export function getToken() {
 
 export function setToken(token) {
   return Cookies.set(TokenKey, token)
-  //return Cookies.set(TokenKey, token, { expires: 7, secure: true, sameSite: 'Strict' });
 }
 
 export function removeToken() {

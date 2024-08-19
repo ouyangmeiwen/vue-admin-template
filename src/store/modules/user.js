@@ -14,9 +14,11 @@ const getDefaultState = () => {
 const state = getDefaultState()
 const mutations = {
   RESET_STATE: (state) => {
+    console.log('Resetting state')
     Object.assign(state, getDefaultState())
   },
   SET_TOKEN: (state, token) => {
+    console.log('Setting token:', token)
     state.token = token
   },
   SET_NAME: (state, name) => {
@@ -38,6 +40,7 @@ const actions = {
       login({ username: username.trim(), password: password, tenantname: tenantname }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.token)
+        console.log('Token after login:', state.token) // 检查 token 是否被正确设置
         setToken(data.token)
         resolve()
       }).catch(error => {
@@ -73,6 +76,7 @@ const actions = {
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
+      console.log('Token before logout:', state.token) // 检查 token 是否存在
       logout(state.token).then(() => {
         removeToken() // must remove  token  first
         resetRouter()
