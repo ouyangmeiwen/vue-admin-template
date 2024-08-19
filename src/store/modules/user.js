@@ -7,12 +7,11 @@ const getDefaultState = () => {
     token: getToken(),
     name: '',
     avatar: '',
-    tenant:''
+    tenant: ''
   }
 }
 
 const state = getDefaultState()
-
 const mutations = {
   RESET_STATE: (state) => {
     Object.assign(state, getDefaultState())
@@ -36,7 +35,7 @@ const actions = {
   login({ commit }, userInfo) {
     const { username, password, tenantname } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password,tenantname:tenantname }).then(response => {
+      login({ username: username.trim(), password: password, tenantname: tenantname }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.token)
         setToken(data.token)
@@ -59,11 +58,11 @@ const actions = {
 
         const { name, avatar, tenant } = data
         commit('SET_NAME', name)
-        console.log('name:'+name)
+        console.log('name:' + name)
         commit('SET_AVATAR', avatar)
-        console.log('avatar:'+avatar)
-        commit('SET_TENANT',tenant)
-        console.log('tenant:'+tenant)
+        console.log('avatar:' + avatar)
+        commit('SET_TENANT', tenant)
+        console.log('tenant:' + tenant)
         resolve(data)
       }).catch(error => {
         reject(error)
