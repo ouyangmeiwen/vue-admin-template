@@ -3,36 +3,34 @@
 
     <!-- Search Bar -->
     <el-row :gutter="10">
-      <el-col :span="3">
+      <el-col :span="3" v-if="isVisible">
         <el-input v-model="Skip" placeholder="Search by Skip" class="mb-1" clearable>
           <template #prepend>Offset(0):</template>
         </el-input>
       </el-col>
-      <el-col :span="3">
+      <el-col :span="3" v-if="isVisible">
         <el-input v-model="MaxResult" placeholder="Search by MaxResult" class="mb-1" clearable>
           <template #prepend>Limit(100):</template>
         </el-input>
       </el-col>
-      <el-col :span="3">
-        <el-input v-model="Total"  class="mb-1" clearable>
+      <el-col :span="3" v-if="isVisible">
+        <el-input v-model="Total" class="mb-1" clearable>
           <template #prepend>总量:</template>
         </el-input>
       </el-col>
 
-      <el-col :span="5">
-        <el-input v-model="searchQuery" placeholder="Search by title or author" class="mb-4" clearable>
-          <template #prepend>内存中过滤:</template>
+      <el-col :span="10">
+        <el-input v-model="searchQuery" @keyup.native.enter="handleQuery" placeholder="Search by title or barcode"
+          class="mb-4" clearable>
+          <template #prepend>条码书名查询:</template>
         </el-input>
       </el-col>
       <el-col :span="10">
-        <el-button type="primary" @click="fetchData">查询</el-button>
-        <el-button  @click="handlePrevPage">上一页</el-button>
-        <el-button   @click="handleNextPage">下一页</el-button>
+        <el-button type="primary" @click="handleQuery">查询</el-button>
+        <el-button type="primary" @click="handlePrevPage">上一页</el-button>
+        <el-button type="primary" @click="handleNextPage">下一页</el-button>
       </el-col>
     </el-row>
-
-
-
 
     <el-table v-loading="listLoading" :data="filteredList" element-loading-text="Loading" border fit
       highlight-current-row>
@@ -51,32 +49,42 @@
           {{ scope.row.title }}
         </template>
       </el-table-column>
-      <el-table-column label="作者" width="200" align="center">
+      <el-table-column label="作者" width="400" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.author }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="页数" width="110" align="center">
+      <el-table-column label="索书号" width="150" align="center">
         <template slot-scope="scope">
-          {{ scope.row.pageviews }}
+          {{ scope.row.callNo }}
+        </template>
+      </el-table-column>
+      <el-table-column label="ISBN" width="150" align="center">
+        <template slot-scope="scope">
+          {{ scope.row.isbn }}
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" align="center">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
+          <el-tag :type="getTagType(scope.row.itemState)">{{ getTagText(scope.row.itemState) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="创建时间" width="250">
+      <el-table-column align="center" prop="creationTime" label="创建时间" width="250">
         <template slot-scope="scope">
           <i class="el-icon-time" />
-          <span>{{ scope.row.display_time }}</span>
+          <span>{{ scope.row.creationTime }}</span>
         </template>
       </el-table-column>
     </el-table>
 
-    <el-row :gutter="10" class="mt-4" justify="center">
 
+    <!-- Page Info -->
+    <el-row :gutter="10" class="mt-4" justify="center">
+      <el-col :span="24" class="text-center">
+        <span>当前页: {{ currentPage }} / {{ totalPages }},总共{{ Total }}条数据</span>
+      </el-col>
     </el-row>
+
   </div>
 </template>
 
@@ -84,16 +92,6 @@
 import { getList, getALL } from '@/api/table'
 
 export default {
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'gray',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    }
-  },
   data() {
     return {
       list: null,
@@ -103,14 +101,18 @@ export default {
       searchQuery: '',
       filteredList: [],
       Total: 0,
+      isVisible: false,
+      currentPage: 0,
+      totalPages: 0
     }
   },
   watch: {
-    searchQuery: 'filterData', //内存中过滤
-    Skip: 'fetchData', //数据库中过滤
-    MaxResult: 'fetchData', //数据库中过滤
+    //searchQuery: 'fetchData', //内存中过滤
+    //Skip: 'fetchData', //数据库中过滤
+    //MaxResult: 'fetchData', //数据库中过滤
   },
   created() {
+    this.Skip = 0
     this.fetchData()
   },
   methods: {
@@ -118,13 +120,17 @@ export default {
       this.listLoading = true
       const params = {
         Skip: this.Skip ? this.Skip : 0,
-        MaxResult: this.MaxResult ? this.MaxResult : 100
+        MaxResult: this.MaxResult ? this.MaxResult : 100,
+        Filter: this.searchQuery ? this.searchQuery : ''
       }
       getALL(params).then(response => {
         this.list = response.data.items
-        this.filterData() // 初次获取数据后，调用 filterData 初始化 filteredList
+        //this.filterData() // 初次获取数据后，调用 filterData 初始化 filteredList
         this.listLoading = false
         this.Total = response.data.total
+        this.currentPage = Math.ceil(this.Skip / this.MaxResult) + 1
+        this.totalPages = Math.ceil(this.Total / this.MaxResult)
+        this.filteredList = this.list
       })
     },
     filterData() {
@@ -137,6 +143,14 @@ export default {
           author.includes(this.searchQuery.toLowerCase());
       });
     },
+    handleQuery() {
+      if (this.Skip === 0) {
+        this.fetchData()
+      } else {
+        this.Skip = 0
+        this.fetchData()
+      }
+    },
     handlePrevPage() {
       if (this.Skip <= 0) {
         this.Skip = 0
@@ -147,6 +161,7 @@ export default {
           this.Skip = this.Skip - this.MaxResult
         }
       }
+      this.fetchData()
     },
     handleNextPage() {
       if (this.Skip >= this.Total) {
@@ -157,6 +172,51 @@ export default {
         } else {
           this.Skip = this.Skip + this.MaxResult
         }
+      }
+      this.fetchData()
+    },
+    getTagType(itemState) {
+      switch (itemState) {
+        case 2:
+          return 'danger';
+        default:
+          return 'success';
+      }
+    },
+    getTagText(itemState) {
+      switch (itemState) {
+        case 1:
+          return '其他';
+        case 2:
+          return '借出';
+        case 3:
+          return '在馆';
+        case 4:
+          return '收费';
+        case 5:
+          return '收费（最早归还日期前不可召回）';
+        case 6:
+          return '加工中';
+        case 7:
+          return '召回';
+        case 8:
+          return '等待上架';
+        case 9:
+          return '等待取出';
+        case 10:
+          return '馆际调拨';
+        case 11:
+          return '要求归还';
+        case 12:
+          return '丢失';
+        case 13:
+          return '残缺';
+        case 14:
+          return '生日图书';
+        case 15:
+          return '委托图书';
+        default:
+          return '未知状态';
       }
     }
   }
@@ -173,5 +233,9 @@ export default {
 
 .mt-4 {
   margin-top: 1rem;
+}
+
+.el-input__prepend {
+  display: inline-block;
 }
 </style>

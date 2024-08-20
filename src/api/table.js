@@ -78,7 +78,8 @@ export async function getALL(params) {
         {
           params: {
             SkipCount:params.Skip,
-            MaxResultCount:params.MaxResult
+            MaxResultCount:params.MaxResult,
+            Filter:params.Filter
           },
           headers: {
             'Content-Type': 'application/json',
@@ -90,15 +91,7 @@ export async function getALL(params) {
       var items=[]
       for (let index = 0; index < response.data.result.items.length; index++) {
         var element = response.data.result.items[index].itemEntity;
-        items.push({
-          id:element.id,
-          barcode:element.barcode,
-          title:element.title,
-          author:element.author,
-          pageviews:element.pages,
-          status:element.itemState,
-          display_time:element.creationTime,
-        })
+        items.push(element)
       }
       return {
         code: 20000,
