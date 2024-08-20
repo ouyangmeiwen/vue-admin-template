@@ -14,23 +14,31 @@
         </el-input>
       </el-col>
       <el-col :span="3">
-        <el-input v-model="Total" readonly  class="mb-1" clearable>
+        <el-input v-model="Total"  class="mb-1" clearable>
           <template #prepend>总量:</template>
         </el-input>
       </el-col>
 
-      <el-col :span="8">
+      <el-col :span="5">
         <el-input v-model="searchQuery" placeholder="Search by title or author" class="mb-4" clearable>
           <template #prepend>内存中过滤:</template>
         </el-input>
       </el-col>
+      <el-col :span="10">
+        <el-button type="primary" @click="fetchData">查询</el-button>
+        <el-button  @click="handlePrevPage">上一页</el-button>
+        <el-button   @click="handleNextPage">下一页</el-button>
+      </el-col>
     </el-row>
+
+
+
 
     <el-table v-loading="listLoading" :data="filteredList" element-loading-text="Loading" border fit
       highlight-current-row>
       <el-table-column align="center" label="序号" width="95">
         <template slot-scope="scope">
-          {{ scope.$index+1 }}
+          {{ scope.$index + 1 }}
         </template>
       </el-table-column>
       <el-table-column label="条码" width="110" align="center">
@@ -38,12 +46,12 @@
           <span>{{ scope.row.barcode }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="书名" >
+      <el-table-column label="书名">
         <template slot-scope="scope">
           {{ scope.row.title }}
         </template>
       </el-table-column>
-      <el-table-column label="作者" width="110" align="center">
+      <el-table-column label="作者" width="200" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.author }}</span>
         </template>
@@ -58,13 +66,17 @@
           <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="created_at" label="创建时间" width="200">
+      <el-table-column align="center" prop="created_at" label="创建时间" width="250">
         <template slot-scope="scope">
           <i class="el-icon-time" />
           <span>{{ scope.row.display_time }}</span>
         </template>
       </el-table-column>
     </el-table>
+
+    <el-row :gutter="10" class="mt-4" justify="center">
+
+    </el-row>
   </div>
 </template>
 
@@ -87,7 +99,7 @@ export default {
       list: null,
       listLoading: true,
       Skip: 0,
-      MaxResult: 100,
+      MaxResult: 10,
       searchQuery: '',
       filteredList: [],
       Total: 0,
@@ -108,12 +120,11 @@ export default {
         Skip: this.Skip ? this.Skip : 0,
         MaxResult: this.MaxResult ? this.MaxResult : 100
       }
-      console.log('params:' + JSON.stringify(params))
       getALL(params).then(response => {
         this.list = response.data.items
         this.filterData() // 初次获取数据后，调用 filterData 初始化 filteredList
         this.listLoading = false
-        this.Total=response.data.total
+        this.Total = response.data.total
       })
     },
     filterData() {
@@ -125,6 +136,28 @@ export default {
           barcode.includes(this.searchQuery.toLowerCase()) ||
           author.includes(this.searchQuery.toLowerCase());
       });
+    },
+    handlePrevPage() {
+      if (this.Skip <= 0) {
+        this.Skip = 0
+      } else {
+        if (this.Skip - this.MaxResult <= 0) {
+          this.Skip = 0
+        } else {
+          this.Skip = this.Skip - this.MaxResult
+        }
+      }
+    },
+    handleNextPage() {
+      if (this.Skip >= this.Total) {
+        this.Skip = this.Total
+      } else {
+        if (this.Skip + this.MaxResult >= this.Total) {
+          //this.Skip = this.Total
+        } else {
+          this.Skip = this.Skip + this.MaxResult
+        }
+      }
     }
   }
 }
@@ -136,5 +169,9 @@ export default {
   /* 设置搜索栏的宽度，可以根据需求调整 */
   max-width: 100%;
   /* 确保搜索栏在小屏幕上不会超出容器宽度 */
+}
+
+.mt-4 {
+  margin-top: 1rem;
 }
 </style>

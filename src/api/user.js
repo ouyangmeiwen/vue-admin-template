@@ -2,9 +2,34 @@ import request from '@/utils/request'
 import axios from 'axios'
 import store from '@/store'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+import isMockEnabled from '@/utils/mockconfig'
 
 
-const isMockEnabled = process.env.VUE_APP_MOCK === 'true'
+async function checkTenant(tenantid) {
+  const isnum = Number.isFinite(Number(tenantid));
+  if (isnum) {
+    return tenantid
+  } else {
+    try {
+      const response = await axios.post(process.env.VUE_APP_BASE_API + '/api/services/app/Account/IsTenantAvailable',
+        {
+          tenancyName: tenantid,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        }
+      );
+      return response.data.result.tenantId
+    } catch (error) {
+      console.error('POST request error:', error);
+      return null;
+    }
+  }
+}
+
 
 export async function login(data) {
   if (isMockEnabled) {
@@ -15,10 +40,9 @@ export async function login(data) {
     })
   } else {
     try {
-
-      //api/services/app/Account/IsTenantIdAvailable  先通过这个接口检测租户是否可用
-
-
+      const tenantid = await checkTenant(data.tenantname)
+      const tenantidInput = tenantid ? tenantid : data.tenantname
+      console.log(tenantidInput);
       const response = await axios.post(process.env.VUE_APP_BASE_API + '/api/TokenAuth/Authenticate',
         {
           userNameOrEmailAddress: data.username,
@@ -27,7 +51,7 @@ export async function login(data) {
         {
           headers: {
             'Content-Type': 'application/json',
-            'Abp.TenantId': data.tenantname // 如果需要认证
+            'Abp.TenantId': tenantidInput // 如果需要认证
           },
           timeout: 10000
         }
@@ -105,7 +129,7 @@ export async function logout(token) {
           },
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` 
+            'Authorization': `Bearer ${token}`
           },
           timeout: 10000
         }

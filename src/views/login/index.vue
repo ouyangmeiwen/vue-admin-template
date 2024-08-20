@@ -99,7 +99,7 @@ export default {
       loginForm: {
         username: 'admin',
         password: '123456',
-        tenantname: '8868'
+        tenantname: 'XMGM'
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
