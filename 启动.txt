@@ -1,4 +1,11 @@
 
+npm install 
+
+#npm audit fix：扫描项目中的依赖包，自动修复可修复的安全漏洞。
+#--force：强制修复，即使修复过程可能导致不兼容的更新。
+npm audit fix --force  
+
+
 npm run dev
 npm run build:prod
 npm run build:stage
